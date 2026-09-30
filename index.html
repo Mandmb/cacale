@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f6f5f1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cambia1">
+<meta name="description" content="A daily Spanish word ladder. Change one letter at a time until you reach CACA.">
+<title>Cambia1</title>
+<style>
+:root{
+  --bg:#f6f5f1;
+  --ink:#151515;
+  --muted:#6f6f6f;
+  --line:#8e8e8e;
+  --soft:#dedbd3;
+  --accent:#a96a3a;
+  --accent-dark:#85502b;
+  --key:#bdbbb7;
+  --good:#2d7b48;
+  --bad:#a63838;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
+body{display:flex;justify-content:center}
+button{font:inherit}
+.app{width:100%;max-width:520px;min-height:100vh;display:flex;flex-direction:column}
+header{
+  height:58px;border-bottom:1px solid #d8d5cf;display:flex;align-items:center;justify-content:center;
+  position:sticky;top:0;background:rgba(246,245,241,.97);z-index:4
+}
+.brand{font-size:30px;font-weight:900;letter-spacing:-1.5px}
+.brand span{font-size:20px;margin-left:3px}
+.headerBtn{position:absolute;top:12px;width:36px;height:36px;border:0;background:transparent;font-size:23px;cursor:pointer}
+.headerBtn.left{left:10px}.headerBtn.right{right:10px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 12px 8px}
+.status{font-size:12px;color:var(--muted);text-align:center;min-height:17px;margin-bottom:7px}
+.meta{display:flex;gap:18px;justify-content:center;font-size:12px;font-weight:800;color:#555;margin-bottom:11px}
+.board{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
+.wordrow{display:grid;grid-template-columns:repeat(4,52px);gap:5px}
+.tile{
+  width:52px;height:52px;border:1.5px solid var(--line);background:#fbfbfa;
+  display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;text-transform:uppercase
+}
+.tile.changed{background:var(--accent);border-color:var(--accent-dark);color:#111}
+.tile.target{background:var(--accent);border-color:var(--accent-dark)}
+.arrow{font-size:12px;color:#777;margin:1px 0}
+.entry{display:grid;grid-template-columns:repeat(4,52px);gap:5px;margin-top:7px}
+.entry .tile{background:#fff;border-color:#4e4e4e}
+.message{height:25px;margin:8px 0 0;text-align:center;font-size:13px;font-weight:800;color:#555}
+.message.good{color:var(--good)}.message.bad{color:var(--bad)}
+.keyboard{width:100%;max-width:455px;margin-top:auto;padding:8px 2px 5px}
+.krow{display:flex;gap:5px;justify-content:center;margin-bottom:6px}
+.key{
+  height:48px;flex:1;max-width:42px;min-width:29px;border:0;border-radius:3px;
+  background:var(--key);font-size:15px;font-weight:900;color:#1e1e1e;cursor:pointer;box-shadow:0 1px 0 #8e8e8e
+}
+.key.wide{max-width:64px;font-size:11px}
+.actions{display:flex;justify-content:center;gap:18px;padding:5px 10px 15px}
+.actions button{border:0;background:transparent;color:#555;font-weight:900;font-size:12px;cursor:pointer}
+.modalBg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:10;align-items:center;justify-content:center;padding:18px}
+.modal{background:white;width:min(94vw,430px);border-radius:9px;padding:21px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h2{margin:0 0 12px;font-size:23px}.modal p,.modal li{line-height:1.52;color:#343434}
+.close{width:100%;border:0;background:#222;color:#fff;padding:12px;border-radius:5px;font-weight:900;cursor:pointer;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:13px 0}
+.stat{border:1px solid #ddd;border-radius:5px;padding:9px 4px;text-align:center}
+.stat b{display:block;font-size:20px}.stat small{font-size:10px;color:#666;font-weight:800}
+.sharebox{white-space:pre-wrap;background:#f4f4f4;border:1px solid #ddd;padding:11px;border-radius:5px;font-family:monospace;font-size:13px}
+.loader{display:inline-block;width:10px;height:10px;border:2px solid #bbb;border-top-color:#444;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:360px){
+ .wordrow,.entry{grid-template-columns:repeat(4,46px)}
+ .tile{width:46px;height:46px;font-size:25px}
+ .key{height:44px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <button class="headerBtn left" id="helpBtn" aria-label="How to play">?</button>
+  <div class="brand">Cambia1 <span>💩</span></div>
+  <button class="headerBtn right" id="statsBtn" aria-label="Stats">▥</button>
+</header>
+
+<main>
+  <div class="status" id="dictStatus"><span class="loader"></span>Loading Spanish dictionary…</div>
+  <div class="meta"><span id="dayLabel">DAILY</span><span>PAR <b id="par">—</b></span><span>MOVES <b id="moves">0</b></span></div>
+
+  <div class="board" id="board"></div>
+  <div class="entry" id="entry"></div>
+  <div class="message" id="message"></div>
+
+  <div class="keyboard">
+    <div class="krow" id="row1"></div>
+    <div class="krow" id="row2"></div>
+    <div class="krow" id="row3"></div>
+  </div>
+</main>
+
+<div class="actions">
+  <button id="undoBtn">UNDO</button>
+  <button id="hintBtn">HINT</button>
+  <button id="shareBtn">SHARE</button>
+</div>
+</div>
+
+<div class="modalBg" id="modalBg">
+  <div class="modal">
+    <div id="modalContent"></div>
+    <button class="close" id="closeModal">CLOSE</button>
+  </div>
+</div>
+
+<script>
+const TARGET = "CACA";
+const APP_VERSION = "v4-fresh-start";
+const WORD_SOURCE = "https://raw.githubusercontent.com/studentenherz/spanish-wordlist/master/es_all.txt";
+const DICT_CACHE_KEY = "cambia1-dictionary-v2";
+const DICT_VERSION = "2026-09";
+const FALLBACK = [
+"CACA","CADA","CALA","CAMA","CANA","CARA","CASA","CAVA","VACA","PACA","PALA","RANA","LANA","NADA",
+"MALA","MAMA","MATA","MASA","PATA","PAPA","PASA","RAMA","RATA","SALA","TALA","TAPA","TASA","LATA",
+"GATA","GANA","DAMA","DATO","DADO","LADO","LAGO","MANO","MAPA","MATE","META","MESA","ROSA","ROPA",
+"ROCA","RISA","RUTA","SACO","SANO","SAPO","SECA","SECO","SOPA","SUMA","TACO","TAZA","TELA","TEMA",
+"TIPO","TIRA","TODO","TOMA","TONO","TORO","TUBO","VASO","VELA","VENA","VIDA","VINO","VIVO","ZONA",
+"BALA","BATA","BATE","BESO","BOLA","BOTA","BOTE","CABO","CEBO","CENA","CERO","CIMA","CINE","CITA",
+"COLA","COMA","COPA","COSA","COTA","CUBO","DEDO","DONA","DURO","FAMA","FARO","FILA","FINO","FOTO",
+"GATO","GIRO","GOMA","HADA","HILO","HORA","IDEA","JEFE","JUGO","LIMA","LISO","LOBO","LOCO","LONA",
+"LUNA","MALO","MAYO","MIEL","MODO","MONO","MOTO","NATA","NAVE","NIDO","NOTA","NUBE","OJOS","ONDA",
+"PALO","PANA","PATO","PENA","PESO","PICA","PICO","PIEL","PILA","PINO","PISO","POCO","PUMA","RAMO",
+"RATO","RAYA","REMO","RETO","RICO","RITO","ROJO","SALE","SEDA","SEIS","TINA","YATE"
+];
+
+let WORDS = new Set(FALLBACK);
+let patternMap = new Map();
+let distances = new Map();
+let input = "";
+let path = [];
+let won = false;
+let puzzle = null;
+let dictionaryReady = false;
+
+const $ = id => document.getElementById(id);
+
+function normalizeWord(s){
+  return String(s||"").trim().toUpperCase()
+    .replaceAll("Á","A").replaceAll("É","E").replaceAll("Í","I")
+    .replaceAll("Ó","O").replaceAll("Ú","U").replaceAll("Ü","U");
+}
+function validFour(s){
+  return /^[A-ZÑ]{4}$/.test(s);
+}
+function dayKey(d=new Date()){
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function dayNumber(){
+  const d=new Date(), base=new Date(2026,0,1);
+  return Math.floor((new Date(d.getFullYear(),d.getMonth(),d.getDate())-base)/86400000);
+}
+function hashString(s){
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}
+  return h>>>0;
+}
+function differsByOne(a,b){
+  let n=0;
+  for(let i=0;i<4;i++){ if(a[i]!==b[i] && ++n>1) return false; }
+  return n===1;
+}
+function patterns(w){
+  return [0,1,2,3].map(i=>w.slice(0,i)+"*"+w.slice(i+1));
+}
+function buildPatternMap(){
+  patternMap = new Map();
+  for(const w of WORDS){
+    for(const p of patterns(w)){
+      if(!patternMap.has(p)) patternMap.set(p,[]);
+      patternMap.get(p).push(w);
+    }
+  }
+}
+function neighbors(w){
+  const s=new Set();
+  for(const p of patterns(w)){
+    const arr=patternMap.get(p)||[];
+    for(const x of arr) if(x!==w) s.add(x);
+  }
+  return [...s];
+}
+function computeDistancesFromTarget(){
+  distances = new Map([[TARGET,0]]);
+  const q=[TARGET];
+  for(let qi=0;qi<q.length;qi++){
+    const w=q[qi], d=distances.get(w);
+    for(const n of neighbors(w)){
+      if(!distances.has(n)){distances.set(n,d+1);q.push(n)}
+    }
+  }
+}
+function shortestPath(start,target=TARGET){
+  if(start===target) return [start];
+  const seen=new Set([start]), q=[start], parent=new Map();
+  for(let qi=0;qi<q.length;qi++){
+    const w=q[qi];
+    for(const n of neighbors(w)){
+      if(seen.has(n)) continue;
+      seen.add(n); parent.set(n,w);
+      if(n===target){
+        const out=[target]; let cur=target;
+        while(cur!==start){cur=parent.get(cur);out.push(cur)}
+        return out.reverse();
+      }
+      q.push(n);
+    }
+  }
+  return null;
+}
+function chooseDailyPuzzle(){
+  const candidates=[...distances.entries()]
+    .filter(([w,d])=>d>=3 && d<=6 && /^[A-ZÑ]{4}$/.test(w))
+    .map(([w,d])=>({w,d}));
+  const seed=hashString(dayKey());
+  const pick=candidates.length?candidates[seed%candidates.length]:{w:"CANA",d:2};
+  return {start:pick.w,par:pick.d};
+}
+function save(){
+  if(!puzzle) return;
+  localStorage.setItem("cambia1-v4-game-"+dayKey(), JSON.stringify({start:puzzle.start,path,won,par:puzzle.par}));
+}
+function loadGame(){
+  const k="cambia1-v4-game-"+dayKey();
+  const saved=JSON.parse(localStorage.getItem(k)||"null");
+  if(saved && saved.start===puzzle.start && Array.isArray(saved.path)){
+    path=saved.path; won=!!saved.won;
+  } else {
+    path=[puzzle.start]; won=false; save();
+  }
+}
+function streak(){
+  return Number(localStorage.getItem("cambia1-streak")||0);
+}
+function updateWinStats(){
+  const today=dayKey(), last=localStorage.getItem("cambia1-last-win");
+  const y=new Date(); y.setDate(y.getDate()-1);
+  if(last!==today){
+    localStorage.setItem("cambia1-streak", last===dayKey(y)?String(streak()+1):"1");
+    localStorage.setItem("cambia1-last-win",today);
+    localStorage.setItem("cambia1-games",String(Number(localStorage.getItem("cambia1-games")||0)+1));
+    localStorage.setItem("cambia1-total-moves",String(Number(localStorage.getItem("cambia1-total-moves")||0)+Math.max(0,path.length-1)));
+    if(path.length-1===puzzle.par) localStorage.setItem("cambia1-pars",String(Number(localStorage.getItem("cambia1-pars")||0)+1));
+  }
+}
+function row(word,prev,isTarget=false){
+  const r=document.createElement("div"); r.className="wordrow";
+  [...word].forEach((ch,i)=>{
+    const t=document.createElement("div"); t.className="tile";
+    // Feedback is based ONLY on CACA: highlight a tile when the
+    // letter exactly matches the target letter in the same position.
+    if(ch===TARGET[i]) t.classList.add(isTarget?"target":"changed");
+    t.textContent=ch; r.appendChild(t);
+  });
+  return r;
+}
+function render(){
+  if(!puzzle) return;
+  const b=$("board"); b.innerHTML="";
+  path.forEach((w,i)=>b.appendChild(row(w,i?path[i-1]:null,false)));
+  if(!won){
+    const arrow=document.createElement("div"); arrow.className="arrow"; arrow.textContent="↓";
+    b.appendChild(arrow);
+    b.appendChild(row(TARGET,null,true));
+  }
+  $("par").textContent=puzzle.par;
+  $("moves").textContent=Math.max(0,path.length-1);
+  renderEntry();
+}
+function renderEntry(){
+  const e=$("entry"); e.innerHTML="";
+  for(let i=0;i<4;i++){
+    const t=document.createElement("div"); t.className="tile"; t.textContent=input[i]||""; e.appendChild(t);
+  }
+}
+function msg(text,kind=""){
+  const m=$("message");m.textContent=text;m.className="message "+kind;
+}
+function submit(){
+  if(won || !dictionaryReady) return;
+  const g=normalizeWord(input); input=""; renderEntry();
+  if(g.length!==4) return msg("Enter a 4-letter word.","bad");
+  if(!WORDS.has(g)) return msg("That word is not in the Spanish dictionary.","bad");
+  const cur=path[path.length-1];
+  if(!differsByOne(cur,g)) return msg(`Change exactly one letter from ${cur}.`,"bad");
+  if(path.includes(g)) return msg("You already used that word.","bad");
+  path.push(g);
+  if(g===TARGET){
+    won=true; updateWinStats(); save(); render();
+    const over=(path.length-1)-puzzle.par;
+    msg(over===0?`Solved at PAR: ${puzzle.par}! 🎉`:`Solved in ${path.length-1} moves. PAR was ${puzzle.par}.`,"good");
+  } else {
+    save(); render(); msg("");
+  }
+}
+function keyPress(k){
+  if(!dictionaryReady || won) return;
+  if(k==="ENTER") return submit();
+  if(k==="⌫"){input=input.slice(0,-1);renderEntry();return}
+  if(input.length<4){input+=k;renderEntry()}
+}
+function makeKeys(id,keys){
+  const el=$(id);
+  for(const k of keys){
+    const b=document.createElement("button");b.className="key"+((k==="ENTER"||k==="⌫")?" wide":"");
+    b.textContent=k;b.onclick=()=>keyPress(k);el.appendChild(b);
+  }
+}
+function modal(html){$("modalContent").innerHTML=html;$("modalBg").style.display="flex"}
+function changedIndex(a,b){
+  for(let i=0;i<4;i++) if(a[i]!==b[i]) return i;
+  return -1;
+}
+function shareGrid(){
+  const rows=[];
+  for(const word of path){
+    const r=[...word].map((ch,i)=>ch===TARGET[i]?"🟫":"⬜");
+    rows.push(r.join(""));
+  }
+  return rows.join("\n");
+}
+async function shareResult(){
+  const result=`Cambia1 #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\n${Math.max(0,path.length-1)}/${puzzle.par} moves/par\n${shareGrid()}\n💩 CACA`;
+  if(navigator.share){try{await navigator.share({title:"Cambia1",text:result,url:location.href});return}catch(e){}}
+  try{await navigator.clipboard.writeText(result);msg("Result copied!","good")}
+  catch(e){modal(`<h2>Share result</h2><div class="sharebox">${result.replace(/\n/g,"<br>")}</div>`)}
+}
+function hint(){
+  if(won) return msg("You already solved today's puzzle.","good");
+  const cur=path[path.length-1];
+  const route=shortestPath(cur,TARGET);
+  if(route && route.length>1) msg(`Hint: try ${route[1]}.`,"good");
+  else msg("No hint available from this word.","bad");
+}
+function undo(){
+  if(won) return msg("Today's puzzle is already complete.","bad");
+  if(path.length>1){path.pop();save();render();msg("")}
+}
+async function loadDictionary(){
+  $("dictStatus").innerHTML='<span class="loader"></span>Loading Spanish dictionary…';
+  let loaded=null;
+  try{
+    const cached=JSON.parse(localStorage.getItem(DICT_CACHE_KEY)||"null");
+    if(cached && cached.version===DICT_VERSION && Array.isArray(cached.words) && cached.words.length>1000){
+      loaded=cached.words;
+    } else {
+      const res=await fetch(WORD_SOURCE,{cache:"force-cache"});
+      if(!res.ok) throw new Error("dictionary fetch failed");
+      const text=await res.text();
+      const set=new Set();
+      for(const raw of text.split(/\r?\n/)){
+        const w=normalizeWord(raw);
+        if(validFour(w)) set.add(w);
+      }
+      set.add(TARGET);
+      loaded=[...set];
+      try{localStorage.setItem(DICT_CACHE_KEY,JSON.stringify({version:DICT_VERSION,words:loaded}))}catch(e){}
+    }
+  }catch(e){
+    loaded=[...new Set(FALLBACK)];
+    $("dictStatus").textContent="Offline fallback dictionary loaded";
+  }
+  WORDS=new Set(loaded);
+  WORDS.add(TARGET);
+  buildPatternMap();
+  computeDistancesFromTarget();
+  puzzle=chooseDailyPuzzle();
+  loadGame();
+  dictionaryReady=true;
+  $("dictStatus").textContent=`${WORDS.size.toLocaleString()} valid 4-letter Spanish words loaded`;
+  render();
+}
+makeKeys("row1",[..."QWERTYUIOP"]);
+makeKeys("row2",[..."ASDFGHJKLÑ"]);
+makeKeys("row3",["ENTER",..."ZXCVBNM","⌫"]);
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Enter") return keyPress("ENTER");
+  if(e.key==="Backspace") return keyPress("⌫");
+  const k=normalizeWord(e.key);
+  if(k.length===1 && /^[A-ZÑ]$/.test(k)) keyPress(k);
+});
+
+$("helpBtn").onclick=()=>modal(`
+<h2>How to play</h2>
+<p>Change today's Spanish word into <b>CACA</b>.</p>
+<ul>
+<li>Each new word must change exactly <b>one letter from your previous word</b>.</li>
+<li>Every step must be a valid <b>4-letter Spanish dictionary word</b>.</li>
+<li>You may not add, remove, or rearrange letters.</li>
+<li><b>PAR</b> is the fewest possible moves using the loaded dictionary.</li>
+</ul>
+<p>A brown tile means that letter is correct for <b>CACA</b> and is in the correct position.</p>`);
+
+$("statsBtn").onclick=()=>{
+  const games=Number(localStorage.getItem("cambia1-games")||0);
+  const total=Number(localStorage.getItem("cambia1-total-moves")||0);
+  const pars=Number(localStorage.getItem("cambia1-pars")||0);
+  modal(`<h2>Your stats</h2>
+  <div class="stats">
+    <div class="stat"><b>${games}</b><small>SOLVES</small></div>
+    <div class="stat"><b>${streak()}</b><small>STREAK</small></div>
+    <div class="stat"><b>${games?(total/games).toFixed(1):"—"}</b><small>AVG MOVES</small></div>
+    <div class="stat"><b>${pars}</b><small>AT PAR</small></div>
+  </div>`);
+};
+$("closeModal").onclick=()=>$("modalBg").style.display="none";
+$("modalBg").onclick=e=>{if(e.target===$("modalBg"))$("modalBg").style.display="none"};
+$("undoBtn").onclick=undo;
+$("hintBtn").onclick=hint;
+$("shareBtn").onclick=shareResult;
+
+loadDictionary();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
+  });
+}
+</script>
+
+</body>
+</html>
