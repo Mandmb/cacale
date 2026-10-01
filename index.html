@@ -79,7 +79,7 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
   100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:1}
 }
 .modalBg{
-  display:none !important;
+  display:none;
   position:fixed;inset:0;background:rgba(0,0,0,.44);
   z-index:1000;align-items:center;justify-content:center;padding:18px;
 }
@@ -246,7 +246,7 @@ const TARGET = "POPO";
 const APP_VERSION = "v4-fresh-start";
 const WORD_SOURCE = "https://raw.githubusercontent.com/studentenherz/spanish-wordlist/master/es_all.txt";
 const DICT_CACHE_KEY = "cambia1-dictionary-v2";
-const DICT_VERSION = "2026-10-v19";
+const DICT_VERSION = "2026-10-v20";
 const FALLBACK = [
 "POPO","CADA","CALA","CAMA","CANA","CARA","CASA","CAVA","VACA","PACA","PALA","RANA","LANA","NADA",
 "MALA","MAMA","MATA","MASA","PATA","PAPA","PASA","RAMA","RATA","SALA","TALA","TAPA","TASA","LATA",
@@ -608,6 +608,52 @@ loadDictionary();
 </script>
 
 
+
+
+<script id="top-buttons-v20">
+(function(){
+  function openModal(id){
+    var el=document.getElementById(id);
+    if(!el) return false;
+    el.style.display="flex";
+    el.setAttribute("aria-hidden","false");
+    return true;
+  }
+
+  function closeModal(id){
+    var el=document.getElementById(id);
+    if(!el) return;
+    el.style.display="none";
+    el.setAttribute("aria-hidden","true");
+  }
+
+  document.addEventListener("click", function(e){
+    var t=e.target.closest("button, [role='button']");
+    if(!t) return;
+
+    var id=(t.id||"").toLowerCase();
+    var text=(t.textContent||"").trim();
+
+    // Help / question mark.
+    if(id==="helpbtn" || id==="help" || text==="?" || t.getAttribute("aria-label")==="Help"){
+      if(openModal("helpModal") || openModal("modalBg")) return;
+    }
+
+    // Stats / chart icon.
+    if(id==="statsbtn" || id==="stats" || t.getAttribute("aria-label")==="Statistics"){
+      if(openModal("statsModal") || openModal("statsBg")) return;
+    }
+  });
+
+  // Clicking the shaded area closes either modal.
+  document.addEventListener("click", function(e){
+    ["helpModal","statsModal","modalBg","statsBg"].forEach(function(id){
+      var el=document.getElementById(id);
+      if(el && e.target===el) closeModal(id);
+    });
+  });
+})();
+</script>
 
 </body>
 </html>

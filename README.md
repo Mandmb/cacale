@@ -1,8 +1,7 @@
-# POPO v19 — Script and Dictionary Fix
+# POPO v20 — Top Buttons Fix
 
-- Fixed the JavaScript runtime error caused by referencing the removed `closeModal` element.
-- This restores the help, stats, keyboard, dictionary loading, and game initialization.
-- Dictionary loads from local cache when available, otherwise fetches the full Spanish list with a 5-second timeout.
-- Falls back instead of hanging if the dictionary source is unavailable.
-- Removed stale service-worker registration.
-- POPO branding, mobile layout, no-zoom, hint scoring, and 💩 celebration remain.
+- Added robust delegated click handlers for the ? Help button and top-right Stats button.
+- Handlers work even if the page re-renders the controls.
+- Help/stats modals can be opened and closed without relying on fragile element-specific listeners.
+- Modal overlays remain hidden initially but are not permanently suppressed.
+- Dictionary/game functionality and all prior mobile fixes remain.
