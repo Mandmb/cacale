@@ -335,6 +335,7 @@ let won = false;
 let puzzle = null;
 let dictionaryReady = false;
 let hintsUsed = 0;
+let undosUsed = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -421,13 +422,13 @@ function chooseDailyPuzzle(){
 }
 function save(){
   if(!puzzle) return;
-  localStorage.setItem("cambale-popo-v7-game-"+dayKey(), JSON.stringify({start:puzzle.start,path,won,par:puzzle.par}));
+  localStorage.setItem("cambale-popo-v7-game-"+dayKey(), JSON.stringify({start:puzzle.start,path,won,par:puzzle.par,hints:hintsUsed,undos:undosUsed}));
 }
 function loadGame(){
   const k="cambale-popo-v7-game-"+dayKey();
   const saved=JSON.parse(localStorage.getItem(k)||"null");
   if(saved && saved.start===puzzle.start && Array.isArray(saved.path)){
-    path=saved.path; won=!!saved.won; hintsUsed=Number(saved.hints||0);
+    path=saved.path; won=!!saved.won; hintsUsed=Number(saved.hints||0); undosUsed=Number(saved.undos||0);
   } else {
     path=[puzzle.start]; won=false; save();
   }
@@ -473,7 +474,7 @@ function render(){
     b.appendChild($("entry"));
   }
   $("par").textContent=puzzle.par;
-  $("score").textContent=Math.max(0,path.length-1)+hintsUsed;
+  $("score").textContent=Math.max(0,path.length-1)+hintsUsed+undosUsed;
   if(!won) renderEntry();
   else $("entry").innerHTML="";
 }
@@ -523,7 +524,7 @@ function submit(){
   path.push(g);
   if(g===TARGET){
     won=true; updateWinStats(); save(); render();
-    const finalScore=Math.max(0,path.length-1)+hintsUsed;
+    const finalScore=Math.max(0,path.length-1)+hintsUsed+undosUsed;
     const over=finalScore-puzzle.par;
     msg(over===0?`Solved at PAR: ${puzzle.par}! 🎉`:`Final score: ${finalScore}. PAR was ${puzzle.par}.`,"good");
     setTimeout(celebrate, 50);
@@ -558,7 +559,7 @@ function shareGrid(){
   return rows.join("\n");
 }
 async function shareResult(){
-  const finalScore=Math.max(0,path.length-1)+hintsUsed;
+  const finalScore=Math.max(0,path.length-1)+hintsUsed+undosUsed;
  const result=`POPO #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\nScore: ${finalScore} | PAR: ${puzzle.par}\n${shareGrid()}\n💩 POPO`;
   if(navigator.share){try{await navigator.share({title:"POPO",text:result,url:location.href});return}catch(e){}}
   try{await navigator.clipboard.writeText(result);msg("Result copied!","good")}
@@ -580,7 +581,7 @@ function hint(){
 }
 function undo(){
   if(won) return msg("Today's puzzle is already complete.","bad");
-  if(path.length>1){path.pop();save();render();msg("")}
+  if(path.length>1){path.pop(); undosUsed += 1; save(); render(); msg("Undo used. +1 penalty","good")}
 }
 async function loadDictionary(){
   $("dictStatus").innerHTML='<span class="loader"></span>Loading Spanish dictionary…';
@@ -660,7 +661,7 @@ $("helpBtn").onclick=()=>modal(`
 <li>Each new word must change exactly <b>one letter from your previous word</b>.</li>
 <li>Every step must be a valid <b>4-letter Spanish dictionary word</b>.</li>
 <li>You may not add, remove, or rearrange letters.</li>
-<li><b>PAR</b> is the fewest possible moves using the loaded dictionary.</li><li>Every hint adds <b>+1</b> to your final score.</li>
+<li><b>PAR</b> is the fewest possible moves using the loaded dictionary.</li><li>Every hint adds <b>+1</b> to your final score.</li><li>Every <b>UNDO</b> adds <b>+1</b> to your final score.</li>
 </ul>
 <p>A brown tile means that letter is correct for <b>POPO</b> and is in the correct position.</p>`);
 
