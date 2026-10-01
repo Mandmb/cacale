@@ -1,9 +1,8 @@
-# POPO v18 — Dictionary Loading Fix
+# POPO v19 — Script and Dictionary Fix
 
-- Prevents the game from being stuck on "Loading Spanish dictionary…".
-- Uses the cached 2,000+ word dictionary immediately when available.
-- Network dictionary fetch now has a 5-second timeout.
-- Falls back instead of hanging if the dictionary host is unavailable.
-- One-time cleanup unregisters the old v17 service worker and clears its caches.
-- v18 no longer registers a service worker.
-- POPO branding, mobile layout, no-zoom behavior, hint scoring, and 💩 celebration remain.
+- Fixed the JavaScript runtime error caused by referencing the removed `closeModal` element.
+- This restores the help, stats, keyboard, dictionary loading, and game initialization.
+- Dictionary loads from local cache when available, otherwise fetches the full Spanish list with a 5-second timeout.
+- Falls back instead of hanging if the dictionary source is unavailable.
+- Removed stale service-worker registration.
+- POPO branding, mobile layout, no-zoom, hint scoring, and 💩 celebration remain.

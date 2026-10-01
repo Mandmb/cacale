@@ -246,7 +246,7 @@ const TARGET = "POPO";
 const APP_VERSION = "v4-fresh-start";
 const WORD_SOURCE = "https://raw.githubusercontent.com/studentenherz/spanish-wordlist/master/es_all.txt";
 const DICT_CACHE_KEY = "cambia1-dictionary-v2";
-const DICT_VERSION = "2026-09";
+const DICT_VERSION = "2026-10-v19";
 const FALLBACK = [
 "POPO","CADA","CALA","CAMA","CANA","CARA","CASA","CAVA","VACA","PACA","PALA","RANA","LANA","NADA",
 "MALA","MAMA","MATA","MASA","PATA","PAPA","PASA","RAMA","RATA","SALA","TALA","TAPA","TASA","LATA",
@@ -507,36 +507,62 @@ function undo(){
 }
 async function loadDictionary(){
   $("dictStatus").innerHTML='<span class="loader"></span>Loading Spanish dictionary…';
-  let loaded=null;
+
+  let loaded = null;
+
+  // Use a valid locally cached dictionary immediately.
   try{
-    const cached=JSON.parse(localStorage.getItem(DICT_CACHE_KEY)||"null");
-    if(cached && cached.version===DICT_VERSION && Array.isArray(cached.words) && cached.words.length>1000){
-      loaded=cached.words;
-    } else {
-      const res=await fetch(WORD_SOURCE,{cache:"force-cache"});
+    const cached = JSON.parse(localStorage.getItem(DICT_CACHE_KEY) || "null");
+    if(cached && Array.isArray(cached.words) && cached.words.length > 1000){
+      loaded = cached.words;
+    }
+  }catch(e){}
+
+  // Fetch the full dictionary only when a usable cache isn't available.
+  if(!loaded){
+    try{
+      const controller = new AbortController();
+      const timeout = setTimeout(()=>controller.abort(), 5000);
+      const res = await fetch(WORD_SOURCE, {cache:"no-store", signal:controller.signal});
+      clearTimeout(timeout);
       if(!res.ok) throw new Error("dictionary fetch failed");
-      const text=await res.text();
-      const set=new Set();
+
+      const text = await res.text();
+      const set = new Set();
+
       for(const raw of text.split(/\r?\n/)){
-        const w=normalizeWord(raw);
+        const w = normalizeWord(raw);
         if(validFour(w)) set.add(w);
       }
+
       set.add(TARGET);
-      loaded=[...set];
-      try{localStorage.setItem(DICT_CACHE_KEY,JSON.stringify({version:DICT_VERSION,words:loaded}))}catch(e){}
+      loaded = [...set];
+
+      try{
+        localStorage.setItem(
+          DICT_CACHE_KEY,
+          JSON.stringify({version:DICT_VERSION, words:loaded})
+        );
+      }catch(e){}
+    }catch(e){
+      loaded = [...new Set(FALLBACK)];
+      $("dictStatus").textContent =
+        `${loaded.length.toLocaleString()} offline Spanish words loaded`;
     }
-  }catch(e){
-    loaded=[...new Set(FALLBACK)];
-    $("dictStatus").textContent="Offline fallback dictionary loaded";
   }
-  WORDS=new Set(loaded);
+
+  WORDS = new Set(loaded);
   WORDS.add(TARGET);
+
   buildPatternMap();
   computeDistancesFromTarget();
-  puzzle=chooseDailyPuzzle();
+  puzzle = chooseDailyPuzzle();
   loadGame();
-  dictionaryReady=true;
-  $("dictStatus").textContent=`${WORDS.size.toLocaleString()} valid 4-letter Spanish words loaded`;
+  dictionaryReady = true;
+
+  $("dictStatus").textContent =
+    `${WORDS.size.toLocaleString()} valid 4-letter Spanish words loaded`;
+
   render();
 }
 makeKeys("row1",[..."QWERTYUIOP"]);
@@ -573,7 +599,6 @@ $("statsBtn").onclick=()=>{
     <div class="stat"><b>${pars}</b><small>AT PAR</small></div>
   </div>`);
 };
-$("closeModal").onclick=()=>$("modalBg").style.display="none";
 $("modalBg").onclick=e=>{if(e.target===$("modalBg"))$("modalBg").style.display="none"};
 $("undoBtn").onclick=undo;
 $("hintBtn").onclick=hint;
@@ -582,13 +607,7 @@ $("shareBtn").onclick=shareResult;
 loadDictionary();
 </script>
 
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(()=>{});
-  });
-}
-</script>
+
 
 </body>
 </html>
