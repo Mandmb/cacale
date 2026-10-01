@@ -241,6 +241,42 @@ button,.key,.actions,.keyboard{
 }
 </style>
 
+
+<style id="mobile-entry-visibility-v22">
+@media (max-width:600px){
+  /*
+   * The custom keyboard is fixed to the bottom of the viewport.
+   * Keep the four-letter entry row above it so the letters being typed
+   * are never hidden underneath the keyboard.
+   */
+  .entry{
+    position:fixed !important;
+    left:50% !important;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 88px + 222px) !important;
+    transform:translateX(-50%) !important;
+    z-index:10000 !important;
+    margin:0 !important;
+    padding:3px !important;
+    background:var(--bg) !important;
+    border-radius:4px !important;
+  }
+
+  /*
+   * Leave enough room in the document so the fixed entry row does not
+   * cover the bottom of the game board when the page is scrolled.
+   */
+  main{
+    padding-bottom:250px !important;
+  }
+}
+
+@media (max-width:380px){
+  .entry{
+    bottom:calc(env(safe-area-inset-bottom,0px) + 88px + 206px) !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
