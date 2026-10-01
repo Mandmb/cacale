@@ -74,9 +74,9 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
   animation:poopFall linear forwards;will-change:transform,opacity;
 }
 @keyframes poopFall{
-  0%{transform:translate3d(0,-80px,0) rotate(0deg);opacity:0}
+  0%{transform:translate3d(0,-40px,0) rotate(0deg);opacity:0}
   8%{opacity:1}
-  100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:1}
+  100%{transform:translate3d(var(--drift),calc(100vh + 140px),0) rotate(var(--spin));opacity:1}
 }
 .modalBg{
   display:none;
@@ -460,57 +460,97 @@ function row(word,prev,isTarget=false){
 }
 function render(){
   if(!puzzle) return;
-  const b=$("board"); b.innerHTML="";
+
+  // Keep the board and the active guessing row as separate siblings.
+  // This prevents the entry row from being moved/reparented on every guess,
+  // which is especially important on mobile Safari when the keyboard is open.
+  const b=$("board");
+  b.innerHTML="";
+
   path.forEach((w,i)=>{
     if(i>0){
-      const arrow=document.createElement("div"); arrow.className="arrow"; arrow.textContent="↓";
+      const arrow=document.createElement("div");
+      arrow.className="arrow";
+      arrow.textContent="↓";
       b.appendChild(arrow);
     }
-    b.appendChild(row(w,i?path[i-1]:null,false));
+    b.appendChild(row(w,i ? path[i-1] : null,false));
   });
-  if(!won){
-    const arrow=document.createElement("div"); arrow.className="arrow"; arrow.textContent="↓";
-    b.appendChild(arrow);
-    b.appendChild($("entry"));
+
+  const entry=$("entry");
+  if(won){
+    entry.innerHTML="";
+    entry.style.display="none";
+  } else {
+    entry.style.display="grid";
+    renderEntry();
   }
+
   $("par").textContent=puzzle.par;
   $("score").textContent=Math.max(0,path.length-1)+hintsUsed+undosUsed;
-  if(!won) renderEntry();
-  else $("entry").innerHTML="";
 }
+function keepEntryAboveKeyboard(behavior="smooth") {
+  const e=$("entry");
+  if(!e || won) return;
+
+  requestAnimationFrame(()=>{
+    const viewportHeight = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    const rect = e.getBoundingClientRect();
+    const bottomSafe = viewportHeight - 24;
+    const topSafe = 72;
+
+    if(rect.bottom > bottomSafe){
+      window.scrollBy({top: rect.bottom - bottomSafe + 24, behavior});
+    } else if(rect.top < topSafe){
+      window.scrollBy({top: rect.top - topSafe - 12, behavior});
+    }
+  });
+}
+
 function renderEntry(){
   const e=$("entry"); e.innerHTML="";
   for(let i=0;i<4;i++){
     const t=document.createElement("div"); t.className="tile"; t.textContent=input[i]||""; e.appendChild(t);
   }
-  if(!won && input.length>0){
-    requestAnimationFrame(()=>{
-      e.scrollIntoView({behavior:"smooth",block:"center"});
-    });
-  }
+  if(!won && input.length>0) keepEntryAboveKeyboard("smooth");
 }
 function msg(text,kind=""){
   const m=$("message");m.textContent=text;m.className="message "+kind;
 }
 
 function celebrate(){
+  // Start the celebration only after the winning board has rendered.
+  // The forced reflow makes the animation reliable on iOS Safari.
   const old=document.querySelector(".celebration");
   if(old) old.remove();
+
   const layer=document.createElement("div");
   layer.className="celebration";
+  layer.setAttribute("aria-hidden","true");
   document.body.appendChild(layer);
-  for(let i=0;i<80;i++){
+
+  const pieces=[];
+  for(let i=0;i<90;i++){
     const s=document.createElement("span");
     s.className="poop";
     s.textContent="💩";
-    s.style.left=(Math.random()*100)+"%";
-    s.style.animationDuration=(2.0+Math.random()*2.5)+"s";
-    s.style.animationDelay=(Math.random()*0.35)+"s";
-    s.style.setProperty("--drift",(Math.random()*240-120)+"px");
-    s.style.setProperty("--spin",(Math.random()*1200-600)+"deg");
+    s.style.left=(Math.random()*100)+"vw";
+    s.style.top=(-40-Math.random()*120)+"px";
+    s.style.animationDuration=(2.4+Math.random()*2.8)+"s";
+    s.style.animationDelay=(Math.random()*0.7)+"s";
+    s.style.setProperty("--drift",(Math.random()*260-130)+"px");
+    s.style.setProperty("--spin",(Math.random()*1400-700)+"deg");
     layer.appendChild(s);
+    pieces.push(s);
   }
-  setTimeout(()=>layer.remove(),5200);
+
+  // Force layout before the animation begins.
+  void layer.offsetWidth;
+  pieces.forEach(s=>s.style.animationPlayState="running");
+
+  window.setTimeout(()=>{
+    if(layer.isConnected) layer.remove();
+  },6500);
 }
 
 function submit(){
@@ -529,7 +569,11 @@ function submit(){
     msg(over===0?`Solved at PAR: ${puzzle.par}! 🎉`:`Final score: ${finalScore}. PAR was ${puzzle.par}.`,"good");
     setTimeout(celebrate, 50);
   } else {
-    save(); render(); msg("");
+    save();
+    render();
+    msg("");
+    // The next blank guessing row must remain visible above the mobile keyboard.
+    keepEntryAboveKeyboard("smooth");
   }
 }
 function keyPress(k){
