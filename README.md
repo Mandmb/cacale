@@ -1,10 +1,7 @@
-# CACALE.IO v14 — Temporary Reset Button
+# CACALE.IO v15 — Final Zoom + Celebration Fix
 
-Adds a temporary RESET button next to SHARE.
-
-- RESET asks for confirmation.
-- It clears today's CACALE game progress and streak state.
-- It reloads the page to start today's puzzle fresh.
-- Dictionary data is preserved.
-- This button is intended for testing and will be removed from the final draft.
-- Service worker cache bumped to v14.
+- Prevents mobile double-tap/gesture zoom using viewport restrictions, touch-action, and iOS gesture prevention.
+- POPO win now explicitly triggers the 💩 rain after the win state renders.
+- Celebration uses a high z-index and Apple Emoji-compatible font stack.
+- Temporary RESET button remains for testing.
+- Service worker cache bumped to v15.

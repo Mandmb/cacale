@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#f6f5f1">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -63,9 +63,20 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
 .actions{display:flex;justify-content:center;gap:18px;padding:3px 10px 10px}
 .actions button{border:0;background:transparent;color:#555;font-weight:900;font-size:12px;cursor:pointer}
 
-.celebration{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
-.poop{position:absolute;top:-70px;font-size:clamp(26px,7vw,42px);animation:poopFall linear forwards;will-change:transform,opacity}
-@keyframes poopFall{0%{transform:translate3d(0,-80px,0) rotate(0deg);opacity:0}10%{opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:.95}}
+.celebration{
+  position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:99999;
+}
+.poop{
+  position:absolute;top:-70px;display:block;
+  font-family:"Apple Color Emoji","Segoe UI Emoji",sans-serif;
+  font-size:clamp(30px,9vw,48px);line-height:1;
+  animation:poopFall linear forwards;will-change:transform,opacity;
+}
+@keyframes poopFall{
+  0%{transform:translate3d(0,-80px,0) rotate(0deg);opacity:0}
+  8%{opacity:1}
+  100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:1}
+}10%{opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:.95}}
 
 .modalBg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal{background:white;width:min(94vw,430px);border-radius:9px;padding:21px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
@@ -104,6 +115,26 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
   .actions button{font-size:12px;padding:7px 8px}
 }
 </style>
+
+
+<style id="mobile-touch-fix">
+html, body { -webkit-text-size-adjust: 100%; }
+button, .key, .actions, .keyboard {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+</style>
+
+
+<script id="ios-gesture-fix">
+(function(){
+  document.addEventListener("gesturestart", function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener("gesturechange", function(e){ e.preventDefault(); }, {passive:false});
+  document.addEventListener("gestureend", function(e){ e.preventDefault(); }, {passive:false});
+})();
+</script>
 
 </head>
 <body>
@@ -325,20 +356,23 @@ function msg(text,kind=""){
 }
 
 function celebrate(){
+  const old=document.querySelector(".celebration");
+  if(old) old.remove();
   const layer=document.createElement("div");
   layer.className="celebration";
   document.body.appendChild(layer);
-  for(let i=0;i<55;i++){
+  for(let i=0;i<80;i++){
     const s=document.createElement("span");
-    s.className="poop"; s.textContent="💩";
+    s.className="poop";
+    s.textContent="💩";
     s.style.left=(Math.random()*100)+"%";
-    s.style.animationDuration=(2.4+Math.random()*2.2)+"s";
-    s.style.animationDelay=(Math.random()*0.7)+"s";
-    s.style.setProperty("--drift",(Math.random()*180-90)+"px");
-    s.style.setProperty("--spin",(Math.random()*900-450)+"deg");
+    s.style.animationDuration=(2.0+Math.random()*2.5)+"s";
+    s.style.animationDelay=(Math.random()*0.35)+"s";
+    s.style.setProperty("--drift",(Math.random()*240-120)+"px");
+    s.style.setProperty("--spin",(Math.random()*1200-600)+"deg");
     layer.appendChild(s);
   }
-  setTimeout(()=>layer.remove(),5000);
+  setTimeout(()=>layer.remove(),5200);
 }
 
 function submit(){
@@ -352,8 +386,10 @@ function submit(){
   path.push(g);
   if(g===TARGET){
     won=true; updateWinStats(); save(); render();
-    const over=(path.length-1)-puzzle.par;
-    msg(over===0?`Solved at PAR: ${puzzle.par}! 🎉`:`Solved in ${path.length-1} moves. PAR was ${puzzle.par}.`,"good");
+    const finalScore=Math.max(0,path.length-1)+hintsUsed;
+    const over=finalScore-puzzle.par;
+    msg(over===0?`Solved at PAR: ${puzzle.par}! 🎉`:`Final score: ${finalScore}. PAR was ${puzzle.par}.`,"good");
+    setTimeout(celebrate, 50);
   } else {
     save(); render(); msg("");
   }
