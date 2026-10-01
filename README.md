@@ -1,11 +1,8 @@
-# CACALE.IO v10 — Forced Mobile Keyboard Position
+# CACALE.IO v11 — Mobile Zoom + POPO Celebration
 
-The mobile keyboard and action buttons now use high-specificity fixed positioning with
-`!important` overrides so earlier layout rules cannot push them below the visible screen.
-
-- Keyboard fixed above Safari's bottom toolbar area.
-- Actions fixed beneath the keyboard.
-- Safe-area aware.
-- POPO target unchanged.
-- Hint scoring and POPO celebration unchanged.
-- Service worker cache bumped to v10.
+- Prevents Safari double-tap zoom on the on-screen keyboard/buttons.
+- Adds `touch-action: manipulation` to interactive controls.
+- Viewport is locked to prevent accidental page zoom.
+- POPO completion explicitly triggers the 💩 rain celebration.
+- Celebration is placed above all UI and uses Apple Emoji-friendly rendering.
+- Service worker cache bumped to v11.
