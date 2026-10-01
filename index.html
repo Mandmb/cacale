@@ -109,7 +109,6 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
 </style>
 
 <style id="reset-button-style">
-#resetBtn{font-weight:800}
 @media(max-width:600px){
   .actions{gap:10px;padding-left:5px;padding-right:5px}
   .actions button{font-size:12px;padding:7px 8px}
@@ -141,7 +140,7 @@ button, .key, .actions, .keyboard {
 <div class="app">
 <header>
   <button class="headerBtn left" id="helpBtn" aria-label="How to play">?</button>
-  <div class="brand">Cambia1 <span>💩</span></div>
+  <div class="brand">POPO <span>💩</span></div>
   <button class="headerBtn right" id="statsBtn" aria-label="Stats">▥</button>
 </header>
 
@@ -164,14 +163,13 @@ button, .key, .actions, .keyboard {
   <button id="undoBtn">UNDO</button>
   <button id="hintBtn">HINT</button>
   <button id="shareBtn">SHARE</button>
-  <button id="resetBtn">RESET</button>
 </div>
 </div>
 
 <div class="modalBg" id="modalBg">
   <div class="modal">
     <div id="modalContent"></div>
-    <button class="close" id="closeModal">CLOSE</button>
+    
   </div>
 </div>
 
@@ -422,24 +420,13 @@ function shareGrid(){
 }
 async function shareResult(){
   const finalScore=Math.max(0,path.length-1)+hintsUsed;
- const result=`Cambia1 #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\nScore: ${finalScore} | PAR: ${puzzle.par}\n${shareGrid()}\n💩 POPO`;
-  if(navigator.share){try{await navigator.share({title:"Cambia1",text:result,url:location.href});return}catch(e){}}
+ const result=`POPO #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\nScore: ${finalScore} | PAR: ${puzzle.par}\n${shareGrid()}\n💩 POPO`;
+  if(navigator.share){try{await navigator.share({title:"POPO",text:result,url:location.href});return}catch(e){}}
   try{await navigator.clipboard.writeText(result);msg("Result copied!","good")}
   catch(e){modal(`<h2>Share result</h2><div class="sharebox">${result.replace(/\n/g,"<br>")}</div>`)}
 }
 
-function resetGame(){
-  const ok = confirm("Reset today's game? Your current progress will be erased.");
-  if(!ok) return;
-  const keys = [];
-  for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
-  keys.forEach(k=>{
-    if(k && (k.startsWith("cambale-popo") || k.startsWith("cambia1-streak") || k.startsWith("cambia1-last-win"))){
-      localStorage.removeItem(k);
-    }
-  });
-  window.location.reload();
-}
+
 
 function hint(){
   if(won) return msg("You already solved today's puzzle.","good");

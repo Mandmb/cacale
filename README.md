@@ -1,7 +1,8 @@
-# CACALE.IO v15 — Final Zoom + Celebration Fix
+# POPO v16 — Final Cleanup
 
-- Prevents mobile double-tap/gesture zoom using viewport restrictions, touch-action, and iOS gesture prevention.
-- POPO win now explicitly triggers the 💩 rain after the win state renders.
-- Celebration uses a high z-index and Apple Emoji-compatible font stack.
-- Temporary RESET button remains for testing.
-- Service worker cache bumped to v15.
+- Header changed from Cambia 1 to POPO.
+- Temporary RESET button removed.
+- Temporary reset URL handler removed.
+- In-app Close/Install popup markup removed where present.
+- Mobile no-zoom, hint scoring, and POPO celebration retained.
+- Cache bumped to v16.

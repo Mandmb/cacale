@@ -1,34 +1,20 @@
-const CACHE = "cambia1-v15";
-const ASSETS = [
-  "./",
-  "./index.html",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/icon-maskable-512.png"
-];
-self.addEventListener("install", event => {
-  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));
+const CACHE = "cambia1-v16";
+const ASSETS = ["./", "./index.html", "./manifest.webmanifest"];
+self.addEventListener("install", e => {
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)));
   self.skipWaiting();
 });
-self.addEventListener("activate", event => {
-  event.waitUntil(caches.keys().then(keys => Promise.all(
+self.addEventListener("activate", e => {
+  e.waitUntil(caches.keys().then(keys => Promise.all(
     keys.filter(k => k !== CACHE).map(k => caches.delete(k))
   )));
   self.clients.claim();
 });
-self.addEventListener("fetch", event => {
-  const req = event.request;
-  if (req.method !== "GET") return;
-  if (req.url.includes("raw.githubusercontent.com")) {
-    event.respondWith(fetch(req).catch(() => caches.match(req)));
-    return;
-  }
-  event.respondWith(
-    caches.match(req).then(cached => cached || fetch(req).then(resp => {
-      const copy = resp.clone();
-      caches.open(CACHE).then(cache => cache.put(req, copy));
-      return resp;
-    }))
-  );
+self.addEventListener("fetch", e => {
+  if (e.request.method !== "GET") return;
+  e.respondWith(fetch(e.request).then(r => {
+    const copy = r.clone();
+    caches.open(CACHE).then(c => c.put(e.request, copy));
+    return r;
+  }).catch(() => caches.match(e.request)));
 });
