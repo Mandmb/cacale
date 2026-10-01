@@ -28,7 +28,7 @@
 html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Arial,Helvetica,sans-serif}
 body{display:flex;justify-content:center}
 button{font:inherit}
-.app{width:100%;max-width:520px;min-height:100vh;display:flex;flex-direction:column}
+.app{width:100%;max-width:520px;min-height:100dvh;display:flex;flex-direction:column}
 header{
   height:58px;border-bottom:1px solid #d8d5cf;display:flex;align-items:center;justify-content:center;
   position:sticky;top:0;background:rgba(246,245,241,.97);z-index:4
@@ -37,7 +37,7 @@ header{
 .brand span{font-size:20px;margin-left:3px}
 .headerBtn{position:absolute;top:12px;width:36px;height:36px;border:0;background:transparent;font-size:23px;cursor:pointer}
 .headerBtn.left{left:10px}.headerBtn.right{right:10px}
-main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 12px 8px}
+main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding:14px 12px 4px}
 .status{font-size:12px;color:var(--muted);text-align:center;min-height:17px;margin-bottom:7px}
 .meta{display:flex;gap:18px;justify-content:center;font-size:12px;font-weight:800;color:#555;margin-bottom:11px}
 .board{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
@@ -53,15 +53,20 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 1
 .entry .tile{background:#fff;border-color:#4e4e4e}
 .message{height:25px;margin:8px 0 0;text-align:center;font-size:13px;font-weight:800;color:#555}
 .message.good{color:var(--good)}.message.bad{color:var(--bad)}
-.keyboard{width:100%;max-width:455px;margin-top:auto;padding:8px 2px 5px}
+.keyboard{width:100%;max-width:455px;margin-top:10px;padding:4px 2px 2px}
 .krow{display:flex;gap:5px;justify-content:center;margin-bottom:6px}
 .key{
   height:48px;flex:1;max-width:42px;min-width:29px;border:0;border-radius:3px;
   background:var(--key);font-size:15px;font-weight:900;color:#1e1e1e;cursor:pointer;box-shadow:0 1px 0 #8e8e8e
 }
 .key.wide{max-width:64px;font-size:11px}
-.actions{display:flex;justify-content:center;gap:18px;padding:5px 10px 15px}
+.actions{display:flex;justify-content:center;gap:18px;padding:3px 10px 10px}
 .actions button{border:0;background:transparent;color:#555;font-weight:900;font-size:12px;cursor:pointer}
+
+.celebration{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:20}
+.poop{position:absolute;top:-70px;font-size:clamp(26px,7vw,42px);animation:poopFall linear forwards;will-change:transform,opacity}
+@keyframes poopFall{0%{transform:translate3d(0,-80px,0) rotate(0deg);opacity:0}10%{opacity:1}100%{transform:translate3d(var(--drift),110vh,0) rotate(var(--spin));opacity:.95}}
+
 .modalBg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.44);z-index:10;align-items:center;justify-content:center;padding:18px}
 .modal{background:white;width:min(94vw,430px);border-radius:9px;padding:21px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
 .modal h2{margin:0 0 12px;font-size:23px}.modal p,.modal li{line-height:1.52;color:#343434}
@@ -72,10 +77,23 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 1
 .sharebox{white-space:pre-wrap;background:#f4f4f4;border:1px solid #ddd;padding:11px;border-radius:5px;font-family:monospace;font-size:13px}
 .loader{display:inline-block;width:10px;height:10px;border:2px solid #bbb;border-top-color:#444;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media(max-width:360px){
+@media(max-width:600px){
+ .app{min-height:100dvh}
+ main{padding:10px 8px 2px}
+ .keyboard{margin-top:8px;padding:2px 1px 1px}
+ .krow{gap:4px;margin-bottom:4px}
+ .key{height:44px}
+ .actions{padding:2px 8px 8px}
+}
+@media(max-width:380px){
  .wordrow,.entry{grid-template-columns:repeat(4,46px)}
  .tile{width:46px;height:46px;font-size:25px}
- .key{height:44px}
+ .key{height:41px}
+ .keyboard{margin-top:5px}
+}
+ .tile{width:46px;height:46px;font-size:25px}
+ .key{height:43px}
+ .keyboard{margin-top:8px}
 }
 </style>
 </head>
@@ -89,7 +107,7 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 1
 
 <main>
   <div class="status" id="dictStatus"><span class="loader"></span>Loading Spanish dictionary…</div>
-  <div class="meta"><span id="dayLabel">DAILY</span><span>PAR <b id="par">—</b></span><span>MOVES <b id="moves">0</b></span></div>
+  <div class="meta"><span id="dayLabel">DAILY</span><span>PAR <b id="par">—</b></span><span>SCORE <b id="score">0</b></span></div>
 
   <div class="board" id="board"></div>
   <div class="entry" id="entry"></div>
@@ -117,6 +135,12 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;padding:14px 1
 </div>
 
 <script>
+if (window.visualViewport) {
+  const setVH = () => document.documentElement.style.setProperty("--vh", `${window.visualViewport.height * 0.01}px`);
+  window.visualViewport.addEventListener("resize", setVH);
+  setVH();
+}
+
 const TARGET = "POPO";
 const APP_VERSION = "v4-fresh-start";
 const WORD_SOURCE = "https://raw.githubusercontent.com/studentenherz/spanish-wordlist/master/es_all.txt";
@@ -144,6 +168,7 @@ let path = [];
 let won = false;
 let puzzle = null;
 let dictionaryReady = false;
+let hintsUsed = 0;
 
 const $ = id => document.getElementById(id);
 
@@ -230,13 +255,13 @@ function chooseDailyPuzzle(){
 }
 function save(){
   if(!puzzle) return;
-  localStorage.setItem("cambale-popo-v6-game-"+dayKey(), JSON.stringify({start:puzzle.start,path,won,par:puzzle.par}));
+  localStorage.setItem("cambale-popo-v7-game-"+dayKey(), JSON.stringify({start:puzzle.start,path,won,par:puzzle.par}));
 }
 function loadGame(){
-  const k="cambale-popo-v6-game-"+dayKey();
+  const k="cambale-popo-v7-game-"+dayKey();
   const saved=JSON.parse(localStorage.getItem(k)||"null");
   if(saved && saved.start===puzzle.start && Array.isArray(saved.path)){
-    path=saved.path; won=!!saved.won;
+    path=saved.path; won=!!saved.won; hintsUsed=Number(saved.hints||0);
   } else {
     path=[puzzle.start]; won=false; save();
   }
@@ -276,7 +301,7 @@ function render(){
     b.appendChild(row(TARGET,null,true));
   }
   $("par").textContent=puzzle.par;
-  $("moves").textContent=Math.max(0,path.length-1);
+  $("score").textContent=Math.max(0,path.length-1)+hintsUsed;
   renderEntry();
 }
 function renderEntry(){
@@ -288,6 +313,24 @@ function renderEntry(){
 function msg(text,kind=""){
   const m=$("message");m.textContent=text;m.className="message "+kind;
 }
+
+function celebrate(){
+  const layer=document.createElement("div");
+  layer.className="celebration";
+  document.body.appendChild(layer);
+  for(let i=0;i<55;i++){
+    const s=document.createElement("span");
+    s.className="poop"; s.textContent="💩";
+    s.style.left=(Math.random()*100)+"%";
+    s.style.animationDuration=(2.4+Math.random()*2.2)+"s";
+    s.style.animationDelay=(Math.random()*0.7)+"s";
+    s.style.setProperty("--drift",(Math.random()*180-90)+"px");
+    s.style.setProperty("--spin",(Math.random()*900-450)+"deg");
+    layer.appendChild(s);
+  }
+  setTimeout(()=>layer.remove(),5000);
+}
+
 function submit(){
   if(won || !dictionaryReady) return;
   const g=normalizeWord(input); input=""; renderEntry();
@@ -332,7 +375,8 @@ function shareGrid(){
   return rows.join("\n");
 }
 async function shareResult(){
-  const result=`Cambia1 #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\n${Math.max(0,path.length-1)}/${puzzle.par} moves/par\n${shareGrid()}\n💩 POPO`;
+  const finalScore=Math.max(0,path.length-1)+hintsUsed;
+ const result=`Cambia1 #${Math.max(1,dayNumber()+1)} ${won?"✅":"🟨"}\nScore: ${finalScore} | PAR: ${puzzle.par}\n${shareGrid()}\n💩 POPO`;
   if(navigator.share){try{await navigator.share({title:"Cambia1",text:result,url:location.href});return}catch(e){}}
   try{await navigator.clipboard.writeText(result);msg("Result copied!","good")}
   catch(e){modal(`<h2>Share result</h2><div class="sharebox">${result.replace(/\n/g,"<br>")}</div>`)}
@@ -341,8 +385,12 @@ function hint(){
   if(won) return msg("You already solved today's puzzle.","good");
   const cur=path[path.length-1];
   const route=shortestPath(cur,TARGET);
-  if(route && route.length>1) msg(`Hint: try ${route[1]}.`,"good");
-  else msg("No hint available from this word.","bad");
+  if(route && route.length>1){
+    hintsUsed += 1;
+    save();
+    render();
+    msg(`Hint: try ${route[1]}. +1 penalty`,"good");
+  } else msg("No hint available from this word.","bad");
 }
 function undo(){
   if(won) return msg("Today's puzzle is already complete.","bad");
@@ -400,7 +448,7 @@ $("helpBtn").onclick=()=>modal(`
 <li>Each new word must change exactly <b>one letter from your previous word</b>.</li>
 <li>Every step must be a valid <b>4-letter Spanish dictionary word</b>.</li>
 <li>You may not add, remove, or rearrange letters.</li>
-<li><b>PAR</b> is the fewest possible moves using the loaded dictionary.</li>
+<li><b>PAR</b> is the fewest possible moves using the loaded dictionary.</li><li>Every hint adds <b>+1</b> to your final score.</li>
 </ul>
 <p>A brown tile means that letter is correct for <b>POPO</b> and is in the correct position.</p>`);
 

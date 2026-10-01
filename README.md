@@ -1,15 +1,11 @@
-# CACALE.IO v6 — POPO Target
+# CACALE.IO v10 — Forced Mobile Keyboard Position
 
-CACALE is now using **POPO** as the fixed final word instead of CACA.
+The mobile keyboard and action buttons now use high-specificity fixed positioning with
+`!important` overrides so earlier layout rules cannot push them below the visible screen.
 
-## Game rules
-- Every daily puzzle ends at POPO.
-- Change exactly one letter from the immediately previous word.
-- Every response must be a valid four-letter Spanish dictionary word.
-- Correct-position feedback is based on POPO.
-- PAR is calculated from the shortest valid route to POPO using the loaded dictionary.
-- Hints follow a shortest available route.
-- Existing PWA/shareable functionality remains included.
-
-## Important
-This version uses a new game-storage namespace so old CACA test paths do not appear in the POPO version.
+- Keyboard fixed above Safari's bottom toolbar area.
+- Actions fixed beneath the keyboard.
+- Safe-area aware.
+- POPO target unchanged.
+- Hint scoring and POPO celebration unchanged.
+- Service worker cache bumped to v10.
