@@ -1,4 +1,4 @@
-const CACHE = "cambia1-v11";
+const CACHE = "cambia1-v12";
 const ASSETS = [
   "./",
   "./index.html",

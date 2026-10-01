@@ -1,8 +1,11 @@
-# CACALE.IO v11 — Mobile Zoom + POPO Celebration
+# CACALE.IO v12 — Test Reset
 
-- Prevents Safari double-tap zoom on the on-screen keyboard/buttons.
-- Adds `touch-action: manipulation` to interactive controls.
-- Viewport is locked to prevent accidental page zoom.
-- POPO completion explicitly triggers the 💩 rain celebration.
-- Celebration is placed above all UI and uses Apple Emoji-friendly rendering.
-- Service worker cache bumped to v11.
+Includes v11 mobile zoom and POPO celebration fixes.
+
+For testing today's puzzle from a fresh state, open the game once with:
+`?reset=1`
+
+Example:
+https://mandmb.github.io/cacale/?reset=1
+
+The reset clears only the game's local browser storage and then removes the query parameter.
