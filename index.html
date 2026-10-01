@@ -242,38 +242,23 @@ button,.key,.actions,.keyboard{
 </style>
 
 
-<style id="mobile-entry-visibility-v22">
+<style id="mobile-entry-scroll-v24">
 @media (max-width:600px){
-  /*
-   * The custom keyboard is fixed to the bottom of the viewport.
-   * Keep the four-letter entry row above it so the letters being typed
-   * are never hidden underneath the keyboard.
-   */
+  /* Keep the active guessing row in the normal document flow.
+     The page itself scrolls when the row approaches the fixed keyboard. */
   .entry{
-    position:fixed !important;
-    left:50% !important;
-    bottom:calc(env(safe-area-inset-bottom,0px) + 88px + 222px) !important;
-    transform:translateX(-50%) !important;
-    z-index:10000 !important;
-    margin:0 !important;
-    padding:3px !important;
-    background:var(--bg) !important;
-    border-radius:4px !important;
+    position:static !important;
+    left:auto !important;
+    bottom:auto !important;
+    transform:none !important;
+    z-index:auto !important;
+    margin:7px 0 0 !important;
+    padding:0 !important;
+    background:transparent !important;
+    border-radius:0 !important;
+    scroll-margin-bottom:250px !important;
   }
-
-  /*
-   * Leave enough room in the document so the fixed entry row does not
-   * cover the bottom of the game board when the page is scrolled.
-   */
-  main{
-    padding-bottom:250px !important;
-  }
-}
-
-@media (max-width:380px){
-  .entry{
-    bottom:calc(env(safe-area-inset-bottom,0px) + 88px + 206px) !important;
-  }
+  main{padding-bottom:250px !important;}
 }
 </style>
 
@@ -475,20 +460,32 @@ function row(word,prev,isTarget=false){
 function render(){
   if(!puzzle) return;
   const b=$("board"); b.innerHTML="";
-  path.forEach((w,i)=>b.appendChild(row(w,i?path[i-1]:null,false)));
+  path.forEach((w,i)=>{
+    if(i>0){
+      const arrow=document.createElement("div"); arrow.className="arrow"; arrow.textContent="↓";
+      b.appendChild(arrow);
+    }
+    b.appendChild(row(w,i?path[i-1]:null,false));
+  });
   if(!won){
     const arrow=document.createElement("div"); arrow.className="arrow"; arrow.textContent="↓";
     b.appendChild(arrow);
-    b.appendChild(row(TARGET,null,true));
+    b.appendChild($("entry"));
   }
   $("par").textContent=puzzle.par;
   $("score").textContent=Math.max(0,path.length-1)+hintsUsed;
-  renderEntry();
+  if(!won) renderEntry();
+  else $("entry").innerHTML="";
 }
 function renderEntry(){
   const e=$("entry"); e.innerHTML="";
   for(let i=0;i<4;i++){
     const t=document.createElement("div"); t.className="tile"; t.textContent=input[i]||""; e.appendChild(t);
+  }
+  if(!won && input.length>0){
+    requestAnimationFrame(()=>{
+      e.scrollIntoView({behavior:"smooth",block:"center"});
+    });
   }
 }
 function msg(text,kind=""){
