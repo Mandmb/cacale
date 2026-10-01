@@ -1,46 +1,15 @@
-# CACALE.IO — Deployment Build
+# CACALE.IO v6 — POPO Target
 
-This package is ready for GitHub Pages with the custom domain:
+CACALE is now using **POPO** as the fixed final word instead of CACA.
 
-https://cacale.io
+## Game rules
+- Every daily puzzle ends at POPO.
+- Change exactly one letter from the immediately previous word.
+- Every response must be a valid four-letter Spanish dictionary word.
+- Correct-position feedback is based on POPO.
+- PAR is calculated from the shortest valid route to POPO using the loaded dictionary.
+- Hints follow a shortest available route.
+- Existing PWA/shareable functionality remains included.
 
-## Included
-- PWA / installable web app
-- Spanish 4-letter dictionary loading
-- Daily puzzle
-- Target word: CACA
-- Correct-position highlighting
-- One-letter-at-a-time rule
-- Daily streaks and stats
-- Shareable results
-- App icons
-- Service worker
-- GitHub Pages custom-domain file (`CNAME`)
-- `.nojekyll`
-
-## Publish with GitHub Pages
-1. Create or use a GitHub repository for the game.
-2. Put every file from this folder in the repository root.
-3. Enable GitHub Pages:
-   Settings → Pages → Deploy from a branch → main → /(root)
-4. GitHub Pages will detect the `CNAME` file and use `cacale.io`.
-
-## Domain DNS
-After purchasing cacale.io, point the apex domain to GitHub Pages using these A records:
-
-185.199.108.153
-185.199.109.153
-185.199.110.153
-185.199.111.153
-
-Optional IPv6 AAAA records:
-
-2606:50c0:8000::153
-2606:50c0:8001::153
-2606:50c0:8002::153
-2606:50c0:8003::153
-
-For `www.cacale.io`, create a CNAME pointing to your GitHub Pages hostname
-(e.g. YOUR-GITHUB-USERNAME.github.io).
-
-Once DNS propagates, enable "Enforce HTTPS" in GitHub Pages.
+## Important
+This version uses a new game-storage namespace so old CACA test paths do not appear in the POPO version.
