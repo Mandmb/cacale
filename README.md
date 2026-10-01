@@ -1,11 +1,9 @@
-# CACALE.IO v12 — Test Reset
+# CACALE.IO v13 — Reliable Daily Reset
 
-Includes v11 mobile zoom and POPO celebration fixes.
-
-For testing today's puzzle from a fresh state, open the game once with:
-`?reset=1`
+Open the live game with `?reset=1` to clear all CACALE/Cambia1 game state in the browser,
+including today's completed puzzle, then automatically clean the URL.
 
 Example:
 https://mandmb.github.io/cacale/?reset=1
 
-The reset clears only the game's local browser storage and then removes the query parameter.
+This version also includes the v11 mobile no-zoom and POPO celebration fixes.
