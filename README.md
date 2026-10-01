@@ -1,9 +1,10 @@
-# CACALE.IO v13 — Reliable Daily Reset
+# CACALE.IO v14 — Temporary Reset Button
 
-Open the live game with `?reset=1` to clear all CACALE/Cambia1 game state in the browser,
-including today's completed puzzle, then automatically clean the URL.
+Adds a temporary RESET button next to SHARE.
 
-Example:
-https://mandmb.github.io/cacale/?reset=1
-
-This version also includes the v11 mobile no-zoom and POPO celebration fixes.
+- RESET asks for confirmation.
+- It clears today's CACALE game progress and streak state.
+- It reloads the page to start today's puzzle fresh.
+- Dictionary data is preserved.
+- This button is intended for testing and will be removed from the final draft.
+- Service worker cache bumped to v14.

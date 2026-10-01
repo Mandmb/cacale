@@ -96,6 +96,15 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
  .keyboard{margin-top:8px}
 }
 </style>
+
+<style id="reset-button-style">
+#resetBtn{font-weight:800}
+@media(max-width:600px){
+  .actions{gap:10px;padding-left:5px;padding-right:5px}
+  .actions button{font-size:12px;padding:7px 8px}
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -124,6 +133,7 @@ main{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;padding
   <button id="undoBtn">UNDO</button>
   <button id="hintBtn">HINT</button>
   <button id="shareBtn">SHARE</button>
+  <button id="resetBtn">RESET</button>
 </div>
 </div>
 
@@ -381,6 +391,20 @@ async function shareResult(){
   try{await navigator.clipboard.writeText(result);msg("Result copied!","good")}
   catch(e){modal(`<h2>Share result</h2><div class="sharebox">${result.replace(/\n/g,"<br>")}</div>`)}
 }
+
+function resetGame(){
+  const ok = confirm("Reset today's game? Your current progress will be erased.");
+  if(!ok) return;
+  const keys = [];
+  for(let i=0;i<localStorage.length;i++) keys.push(localStorage.key(i));
+  keys.forEach(k=>{
+    if(k && (k.startsWith("cambale-popo") || k.startsWith("cambia1-streak") || k.startsWith("cambia1-last-win"))){
+      localStorage.removeItem(k);
+    }
+  });
+  window.location.reload();
+}
+
 function hint(){
   if(won) return msg("You already solved today's puzzle.","good");
   const cur=path[path.length-1];
@@ -471,6 +495,7 @@ $("hintBtn").onclick=hint;
 $("shareBtn").onclick=shareResult;
 
 loadDictionary();
+document.getElementById("resetBtn").addEventListener("click",resetGame);
 </script>
 
 <script>
