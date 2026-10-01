@@ -197,6 +197,50 @@ button,.key,.actions,.keyboard{
 }
 </style>
 
+
+<style id="modal-mobile-v21">
+@media (max-width:600px){
+  body.modal-open .keyboard,
+  body.modal-open .actions{
+    display:none !important;
+  }
+
+  body.modal-open{
+    overflow:hidden !important;
+  }
+
+  .modalBg{
+    align-items:flex-start !important;
+    justify-content:center !important;
+    padding:16px 10px !important;
+    box-sizing:border-box !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+  }
+
+  .modal{
+    width:calc(100vw - 20px) !important;
+    max-width:520px !important;
+    max-height:calc(100dvh - 32px) !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    box-sizing:border-box !important;
+    margin:0 auto !important;
+    padding:20px !important;
+  }
+
+  .modal h2{
+    font-size:28px !important;
+    line-height:1.15 !important;
+  }
+
+  .modal p,.modal li{
+    font-size:18px !important;
+    line-height:1.45 !important;
+  }
+}
+</style>
+
 </head>
 <body>
 <div class="app">
@@ -246,7 +290,7 @@ const TARGET = "POPO";
 const APP_VERSION = "v4-fresh-start";
 const WORD_SOURCE = "https://raw.githubusercontent.com/studentenherz/spanish-wordlist/master/es_all.txt";
 const DICT_CACHE_KEY = "cambia1-dictionary-v2";
-const DICT_VERSION = "2026-10-v20";
+const DICT_VERSION = "2026-10-v21";
 const FALLBACK = [
 "POPO","CADA","CALA","CAMA","CANA","CARA","CASA","CAVA","VACA","PACA","PALA","RANA","LANA","NADA",
 "MALA","MAMA","MATA","MASA","PATA","PAPA","PASA","RAMA","RATA","SALA","TALA","TAPA","TASA","LATA",
@@ -617,6 +661,7 @@ loadDictionary();
     if(!el) return false;
     el.style.display="flex";
     el.setAttribute("aria-hidden","false");
+    document.body.classList.add("modal-open");
     return true;
   }
 
@@ -625,6 +670,9 @@ loadDictionary();
     if(!el) return;
     el.style.display="none";
     el.setAttribute("aria-hidden","true");
+    if(!document.querySelector(".modalBg[style*='display: flex'], .modalBg[style*='display:flex']")){
+      document.body.classList.remove("modal-open");
+    }
   }
 
   document.addEventListener("click", function(e){
@@ -653,6 +701,21 @@ loadDictionary();
     });
   });
 })();
+</script>
+
+
+<script id="modal-keyboard-v21">
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape"){
+    document.querySelectorAll(".modalBg").forEach(function(el){
+      if(getComputedStyle(el).display !== "none"){
+        el.style.display="none";
+        el.setAttribute("aria-hidden","true");
+      }
+    });
+    document.body.classList.remove("modal-open");
+  }
+});
 </script>
 
 </body>
