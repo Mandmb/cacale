@@ -1,7 +1,9 @@
-# POPO v17 — Mobile Layout Cleanup
+# POPO v18 — Dictionary Loading Fix
 
-- Rebuilt the malformed CSS that was causing the iPhone layout to shift/crop.
-- Ensured the modal is hidden on startup so no blank Close popup appears.
-- Removed the stale RESET event listener.
-- Kept POPO branding, mobile keyboard positioning, no-zoom protections, hint scoring, and 💩 celebration.
-- Service worker bumped to v17.
+- Prevents the game from being stuck on "Loading Spanish dictionary…".
+- Uses the cached 2,000+ word dictionary immediately when available.
+- Network dictionary fetch now has a 5-second timeout.
+- Falls back instead of hanging if the dictionary host is unavailable.
+- One-time cleanup unregisters the old v17 service worker and clears its caches.
+- v18 no longer registers a service worker.
+- POPO branding, mobile layout, no-zoom behavior, hint scoring, and 💩 celebration remain.
